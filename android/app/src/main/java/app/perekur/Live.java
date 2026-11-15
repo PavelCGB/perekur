@@ -62,7 +62,14 @@ public class Live extends BroadcastReceiver {
                 .setContentIntent(open);
 
         int done = (int) Math.max(0, Math.min(1000, 1000 * (now - start) / Math.max(1, end - start)));
-        if (Build.VERSION.SDK_INT >= 36) {
+        if (Build.VERSION.SDK_INT >= 37) {
+            // Android 17: шаблон для таймеров, его Samsung One UI 9 берёт в Now Bar
+            b.setStyle(new Notification.MetricStyle()
+                    .addMetric(new Notification.Metric(Notification.Metric.TimeDifference.forTimer(
+                            java.time.Instant.ofEpochMilli(end), Notification.Metric.TimeDifference.FORMAT_CHRONOMETER), "Осталось"))
+                    .addMetric(new Notification.Metric(new Notification.Metric.FixedText(at), "Можно в"))
+                    .setCriticalMetric(0));
+        } else if (Build.VERSION.SDK_INT >= 36) {
             b.setStyle(new Notification.ProgressStyle()
                     .setProgressSegments(Collections.singletonList(new Notification.ProgressStyle.Segment(1000).setColor(ORANGE)))
                     .setStyledByProgress(true)
