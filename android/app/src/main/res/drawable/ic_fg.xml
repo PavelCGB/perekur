@@ -1,0 +1,9 @@
+<!-- glowing ring with a gap, like the timer dial -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:strokeColor="#33FFFFFF" android:strokeWidth="6" android:fillColor="#00000000"
+        android:pathData="M54,30a24,24 0 1,1 0,48a24,24 0 1,1 0,-48" />
+    <path android:strokeColor="#FFFF6B2C" android:strokeWidth="6" android:strokeLineCap="round" android:fillColor="#00000000"
+        android:pathData="M54,30a24,24 0 1,1 -24,24" />
+    <path android:fillColor="#FFFFB347" android:pathData="M51,40h6v16h-6z" />
+</vector>
