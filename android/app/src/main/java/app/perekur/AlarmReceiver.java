@@ -23,11 +23,12 @@ public class AlarmReceiver extends BroadcastReceiver {
         ch.setVibrationPattern(new long[]{0, 500, 200, 500, 200, 900});
         nm.createNotificationChannel(ch);
 
+        Live.hide(c); // отсчёт закончен — убираем живое уведомление
         PendingIntent open = PendingIntent.getActivity(c, 2, new Intent(c, MainActivity.class), PendingIntent.FLAG_IMMUTABLE);
         nm.notify(1, new Notification.Builder(c, CH)
                 .setSmallIcon(R.drawable.ic_stat)
-                .setContentTitle("Можно курить")
-                .setContentText("Перерыв выдержан. Молодец!")
+                .setContentTitle("Молодец, ты продержался!")
+                .setContentText("Можешь выйти перекурить.")
                 .setCategory(Notification.CATEGORY_ALARM)
                 .setContentIntent(open)
                 .setAutoCancel(true)

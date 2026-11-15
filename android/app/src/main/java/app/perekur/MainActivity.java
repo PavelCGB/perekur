@@ -49,13 +49,14 @@ public class MainActivity extends Activity {
 
     class Bridge {
         @JavascriptInterface
-        public void schedule(double at) {
+        public void schedule(double at, double startAt) {
             AlarmManager am = getSystemService(AlarmManager.class);
             PendingIntent show = PendingIntent.getActivity(MainActivity.this, 1, new Intent(MainActivity.this, MainActivity.class), PendingIntent.FLAG_IMMUTABLE);
             if (Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms())
                 am.setAlarmClock(new AlarmManager.AlarmClockInfo((long) at, show), alarmIntent(MainActivity.this));
             else
                 am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, (long) at, alarmIntent(MainActivity.this));
+            Live.start(MainActivity.this, (long) startAt, (long) at);
         }
 
         @JavascriptInterface
@@ -69,6 +70,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void cancel() {
             getSystemService(AlarmManager.class).cancel(alarmIntent(MainActivity.this));
+            Live.hide(MainActivity.this);
         }
 
         @JavascriptInterface

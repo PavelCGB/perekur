@@ -335,7 +335,7 @@ $("go").onclick = () => {
   if ($("app").classList.contains("waiting")) return;
   try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch {} // звук разрешается только после нажатия
   stopAlarm(); startAt = Date.now(); alarmed = false; save(); render(); syncWake();
-  window.Android?.schedule(startAt + interval * 60000);   // в APK: будильник сработает и при заблокированном телефоне
+  window.Android?.schedule(startAt + interval * 60000, startAt);   // в APK: будильник сработает и при заблокированном телефоне
 };
 // сброс идущего таймера — в два нажатия, чтобы не сбить случайно
 $("reset").onclick = () => {

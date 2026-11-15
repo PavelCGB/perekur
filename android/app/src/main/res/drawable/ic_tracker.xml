@@ -1,0 +1,6 @@
+<!-- ember dot that slides along the progress bar -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFB347" android:pathData="M12,4a8,8 0 1,1 0,16a8,8 0 1,1 0,-16" />
+    <path android:fillColor="#FFFF6B2C" android:pathData="M12,8a4,4 0 1,1 0,8a4,4 0 1,1 0,-8" />
+</vector>
