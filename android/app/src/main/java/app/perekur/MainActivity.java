@@ -40,7 +40,7 @@ public class MainActivity extends Activity {
 
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED)
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
-        Updater.check(this);
+        Updater.check(this, false);
     }
 
     static PendingIntent alarmIntent(Context c) {
@@ -57,6 +57,14 @@ public class MainActivity extends Activity {
             else
                 am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, (long) at, alarmIntent(MainActivity.this));
         }
+
+        @JavascriptInterface
+        public String version() {
+            try { return getPackageManager().getPackageInfo(getPackageName(), 0).versionName; } catch (Exception e) { return ""; }
+        }
+
+        @JavascriptInterface
+        public void checkUpdate() { Updater.check(MainActivity.this, true); }
 
         @JavascriptInterface
         public void cancel() {

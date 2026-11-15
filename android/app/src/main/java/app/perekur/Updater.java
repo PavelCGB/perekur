@@ -22,19 +22,20 @@ import java.util.Scanner;
 class Updater {
     static final String REPO = "PavelCGB/perekur";
 
-    static void check(Activity a) {
+    /** manual = нажата кнопка: тогда сообщаем и «последняя версия», и ошибку сети. */
+    static void check(Activity a, boolean manual) {
         new Thread(() -> {
             try {
                 HttpURLConnection c = (HttpURLConnection) new URL("https://api.github.com/repos/" + REPO + "/releases/latest").openConnection();
                 c.setRequestProperty("Accept", "application/vnd.github+json");
                 c.setConnectTimeout(8000); c.setReadTimeout(8000);
-                if (c.getResponseCode() != 200) return;
+                if (c.getResponseCode() != 200) { toast(a, manual, "Не удалось проверить обновления"); return; }
                 String body;
                 try (InputStream in = c.getInputStream(); Scanner s = new Scanner(in, "UTF-8").useDelimiter("\\A")) { body = s.hasNext() ? s.next() : ""; }
                 JSONObject rel = new JSONObject(body);
                 long latest = Long.parseLong(rel.getString("tag_name").replaceAll("\\D", ""));
                 long mine = a.getPackageManager().getPackageInfo(a.getPackageName(), 0).getLongVersionCode();
-                if (latest <= mine) return;
+                if (latest <= mine) { toast(a, manual, "У тебя последняя версия"); return; }
                 String apk = null;
                 JSONArray assets = rel.getJSONArray("assets");
                 for (int i = 0; i < assets.length(); i++) {
@@ -52,8 +53,12 @@ class Updater {
                             .setNegativeButton("Позже", null)
                             .show();
                 });
-            } catch (Exception ignored) { } // нет сети или GitHub недоступен — просто работаем дальше
+            } catch (Exception e) { toast(a, manual, "Нет интернета — проверь позже"); } // при автопроверке молча работаем дальше
         }).start();
+    }
+
+    static void toast(Activity a, boolean show, String msg) {
+        if (show) a.runOnUiThread(() -> android.widget.Toast.makeText(a, msg, android.widget.Toast.LENGTH_SHORT).show());
     }
 
     static void download(Activity a, String url, long version) {

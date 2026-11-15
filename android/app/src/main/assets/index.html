@@ -13,6 +13,7 @@
   color-scheme: dark;
 }
 html, body { height: 100%; }
+[hidden] { display: none !important; } /* иначе .view{display:flex} показывает скрытую вкладку */
 body { background: radial-gradient(120% 70% at 50% 0%, var(--bg2), var(--bg) 70%) fixed, var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; overflow-x: hidden; }
 .app { max-width: 460px; margin: 0 auto; min-height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;
   padding-block: 18px 26px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -21,6 +22,16 @@ body { background: radial-gradient(120% 70% at 50% 0%, var(--bg2), var(--bg) 70%
 header { display: flex; justify-content: space-between; align-items: center; }
 h1 { font-family: var(--display); font-weight: 800; font-size: 1rem; letter-spacing: .14em; text-transform: uppercase; margin: 0; }
 h1 span { color: var(--ember); }
+.brand { display: flex; align-items: center; gap: 10px; }
+.upd { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ember); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.upd svg { width: 18px; height: 18px; }
+.upd.spin svg { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.panel { display: grid; gap: 14px; padding: 16px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line); }
+.panel .step { margin-top: 0; }
+.panel .label { margin-bottom: 0; }
+.lockmsg { display: none; margin: 0; color: var(--ember2); font-size: .85rem; }
+.locked .lockmsg { display: block; }
 .pill { font-size: .78rem; font-weight: 700; padding: 6px 12px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); }
 .ready .pill { color: var(--ready); border-color: color-mix(in srgb, var(--ready) 40%, transparent); }
 .waiting .pill { color: var(--ember2); }
@@ -102,13 +113,18 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
 
 <main class="app idle" id="app">
   <header>
-    <h1>Пере<span>кур</span></h1>
+    <div class="brand">
+      <h1>Пере<span>кур</span></h1>
+      <button class="upd" id="upd" aria-label="Проверить обновления" title="Проверить обновления">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>
+      </button>
+    </div>
     <div class="pill" id="pill">Не запущен</div>
   </header>
 
   <nav class="tabs" role="tablist">
     <button role="tab" id="tab-timer" aria-selected="true">Таймер</button>
-    <button role="tab" id="tab-day" aria-selected="false">Мой день</button>
+    <button role="tab" id="tab-day" aria-selected="false">Мой режим</button>
   </nav>
 
   <section class="view" id="view-timer">
@@ -128,21 +144,6 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
 
     <p class="quote" id="quote" title="Нажми — другая фраза"></p>
 
-    <div>
-      <div class="label">Перерыв между перекурами <output id="ivl">2 ч</output></div>
-      <div class="chips" id="chips">
-        <button data-m="30">30м</button><button data-m="60">1ч</button><button data-m="90">1,5ч</button><button data-m="120">2ч</button><button data-m="180">3ч</button>
-      </div>
-      <div class="step">
-        <button id="minus">− 15 мин</button>
-        <button id="plus">+ 15 мин</button>
-      </div>
-    </div>
-
-    <label class="opt" for="keep">Не гасить экран, пока ждёшь
-      <span class="switch"><input type="checkbox" id="keep"><span></span></span>
-    </label>
-
     <div class="actions">
       <button id="go">Покурил — засечь</button>
       <button id="reset">Сброс</button>
@@ -151,6 +152,21 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
   </section>
 
   <section class="view" id="view-day" hidden>
+    <div class="panel">
+      <div class="label">Перерыв между перекурами <output id="ivl">2 ч</output></div>
+      <div class="chips" id="chips">
+        <button data-m="30">30м</button><button data-m="60">1ч</button><button data-m="90">1,5ч</button><button data-m="120">2ч</button><button data-m="180">3ч</button>
+      </div>
+      <div class="step">
+        <button id="minus">− 15 мин</button>
+        <button id="plus">+ 15 мин</button>
+      </div>
+      <p class="lockmsg">Пока идёт таймер, перерыв не меняется.</p>
+      <label class="opt" for="keep">Не гасить экран, пока ждёшь
+        <span class="switch"><input type="checkbox" id="keep"><span></span></span>
+      </label>
+    </div>
+
     <div class="big">
       <div class="num" id="perDay">8</div>
       <p id="perDayText">сигарет в день при перерыве 2 ч</p>
@@ -196,7 +212,7 @@ const QUOTES_WAIT = [
   "Пройдись пару минут. Движение снимает тягу лучше сигареты.",
   "Сорвёшься сейчас — ничего не получишь. Дождёшься — станешь сильнее.",
   "Глубокий вдох носом, медленный выдох ртом. Пять раз. Отпустило?",
-  "Посмотри на экономию во вкладке «Мой день». Это твои деньги.",
+  "Посмотри на экономию во вкладке «Мой режим». Это твои деньги.",
   "Тяга — это просто волна. Ты на доске, а не под водой.",
   "Ещё немного. Ты уже прошёл больше, чем осталось."
 ];
@@ -251,7 +267,7 @@ function renderDay() {
   $("mDay").textContent = rub(perDay); $("mMonth").textContent = rub(perDay * 30); $("mYear").textContent = rub(perDay * 365);
   $("note").innerHTML = less > 0
     ? "Это <b>" + Math.round(less * 365 / PACK) + " " + plural(Math.round(less * 365 / PACK), "пачка", "пачки", "пачек") + "</b> в год, которые ты не купишь. Увеличь перерыв ещё на 15 минут — сэкономишь больше."
-    : "С таким перерывом ты куришь не меньше, чем раньше. Увеличь перерыв на вкладке «Таймер», чтобы появилась экономия.";
+    : "С таким перерывом ты куришь не меньше, чем раньше. Увеличь перерыв выше, чтобы появилась экономия.";
   for (const id of ["wake", "sleep", "before", "price"]) store.set(id, $(id).value);
 }
 
@@ -340,6 +356,12 @@ $("plus").onclick = () => setIvl(interval + 15);
 $("chips").onclick = e => { if (e.target.dataset.m) setIvl(+e.target.dataset.m); };
 $("keep").onchange = () => { save(); syncWake(); };
 $("quote").onclick = newQuote;
+$("upd").onclick = () => {
+  const b = $("upd"); if (b.classList.contains("spin")) return;
+  b.classList.add("spin"); setTimeout(() => b.classList.remove("spin"), 1500);
+  if (window.Android) window.Android.checkUpdate();
+  else { const p = $("pill"), t = p.textContent; p.textContent = "Только в приложении"; setTimeout(() => p.textContent = t, 2000); }
+};
 for (const id of ["wake", "sleep", "before", "price"]) $(id).oninput = renderDay;
 document.addEventListener("pointerdown", e => { if (beeper && !e.target.closest("#go")) stopAlarm(); });
 document.addEventListener("visibilitychange", () => { render(); syncWake(); });
@@ -352,7 +374,7 @@ function showTab(day) {
 $("tab-timer").onclick = () => showTab(false);
 $("tab-day").onclick = () => showTab(true);
 showTab(store.get("tab", false));
-if (window.Android) document.querySelector(".hint").textContent = "Уведомление со звуком придёт, даже если телефон заблокирован.";
+if (window.Android) document.querySelector(".hint").textContent = "Уведомление со звуком придёт, даже если телефон заблокирован. Версия " + window.Android.version() + ".";
 
 render(); renderDay(); syncWake();
 setInterval(() => { render(); syncWake(); }, 500);
