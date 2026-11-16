@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
 <title>Таймер перекура</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@500;700&display=swap">
@@ -108,6 +109,24 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
 .money span { font-size: .75rem; color: var(--muted); }
 .note { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.5; }
 .note b { color: var(--fg); }
+.manual { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: -4px; }
+.manual button { border: 0; background: none; color: var(--muted); font: 500 .75rem var(--body); text-decoration: underline dotted; text-underline-offset: 3px; cursor: pointer; padding: 4px 8px; opacity: .7; }
+.manualf { color: var(--muted); font-size: .8rem; }
+.manualf input { width: 64px; box-sizing: border-box; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--fg); padding: 6px 8px; font: 600 .85rem var(--body); text-align: center; }
+.locked .manual { opacity: .4; pointer-events: none; }
+.brandbtn { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; box-sizing: border-box; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 700 .95rem var(--body); cursor: pointer; text-align: left; }
+.brandbtn small { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; }
+.brandbtn b { color: var(--ember2); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+dialog.brands { width: min(92vw, 420px); box-sizing: border-box; border: 1px solid var(--line); border-radius: 20px; background: var(--bg2); color: var(--fg); padding: 18px; font-family: var(--body); }
+dialog.brands::backdrop { background: rgba(0,0,0,.65); }
+dialog.brands h2 { margin: 0 0 12px; font: 800 .95rem var(--display); }
+.blist { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 46vh; overflow-y: auto; margin-bottom: 12px; }
+.blist button { padding: 12px 8px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 700 .9rem var(--body); cursor: pointer; }
+.blist button[aria-pressed="true"] { background: linear-gradient(135deg, var(--ember), var(--ember2)); color: #1a0d05; border-color: transparent; }
+.bcustom { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.bcustom input { min-width: 0; box-sizing: border-box; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 12px; font: 700 1rem var(--body); }
+.bcustom button, .bclose { border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 700 .9rem var(--body); cursor: pointer; padding: 0 16px; }
+.bclose { width: 100%; margin-top: 10px; padding: 12px; }
 @media (prefers-reduced-motion: reduce) { .smoke { display: none; } .alarm .dial { animation: none; } .prog { transition: none; } }
 </style>
 
@@ -144,6 +163,8 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
 
     <p class="quote" id="quote" title="Нажми — другая фраза"></p>
 
+    <button class="brandbtn" id="brandBtn"><small>Мои сигареты</small><b id="brandName">Выбрать</b></button>
+
     <div class="actions">
       <button id="go">Покурил — засечь</button>
       <button id="reset">Сброс</button>
@@ -160,6 +181,10 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
       <div class="step">
         <button id="minus">− 15 мин</button>
         <button id="plus">+ 15 мин</button>
+      </div>
+      <div class="manual">
+        <button type="button" id="manualBtn">своё время</button>
+        <label class="manualf" id="manualF" hidden><input type="number" id="manualIn" min="1" max="600" inputmode="numeric" aria-label="Перерыв в минутах"> мин</label>
       </div>
       <p class="lockmsg">Пока идёт таймер, перерыв не меняется.</p>
       <label class="opt" for="keep">Не гасить экран, пока ждёшь
@@ -197,6 +222,16 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
     </div>
     <p class="note" id="note"></p>
   </section>
+
+  <dialog class="brands" id="brandDlg">
+    <h2>Какие сигареты ты куришь?</h2>
+    <div class="blist" id="blist"></div>
+    <form class="bcustom" id="bform">
+      <input id="bcustom" maxlength="30" placeholder="Другие — впиши название" autocomplete="off">
+      <button type="submit">OK</button>
+    </form>
+    <button class="bclose" id="bclose" type="button">Закрыть</button>
+  </dialog>
 </main>
 
 <script>
@@ -319,17 +354,17 @@ async function syncWake() {
 function beep(f) {
   if (!audio) return;
   const o = audio.createOscillator(), g = audio.createGain(), t = audio.currentTime;
-  o.type = "triangle"; o.frequency.value = f; o.connect(g); g.connect(audio.destination);
-  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.5, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
-  o.start(t); o.stop(t + 0.4);
+  o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(audio.destination);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.14, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+  o.start(t); o.stop(t + 0.18);
 }
-function chime() { beep(660); setTimeout(() => beep(880), 180); setTimeout(() => beep(1320), 360); }
+function chime() { [784, 988, 784, 988].forEach((f, i) => setTimeout(() => beep(f), i * 170)); }
 function alarm() {
   alarmed = true; save();
   $("app").classList.add("alarm");
-  try { navigator.vibrate?.([500, 200, 500, 200, 900]); } catch {}
+  try { navigator.vibrate?.([250, 150, 250]); } catch {}
   chime(); let n = 0;
-  beeper = setInterval(() => { chime(); try { navigator.vibrate?.(400); } catch {} if (++n >= 10) stopAlarm(); }, 2000);
+  beeper = setInterval(() => { chime(); try { navigator.vibrate?.(200); } catch {} if (++n >= 3) stopAlarm(); }, 3000);
 }
 function stopAlarm() { clearInterval(beeper); beeper = null; $("app").classList.remove("alarm"); try { navigator.vibrate?.(0); } catch {} }
 
@@ -354,6 +389,8 @@ $("reset").onclick = () => {
 $("minus").onclick = () => setIvl(interval - 15);
 $("plus").onclick = () => setIvl(interval + 15);
 $("chips").onclick = e => { if (e.target.dataset.m) setIvl(+e.target.dataset.m); };
+$("manualBtn").onclick = () => { const f = $("manualF"); f.hidden = !f.hidden; if (!f.hidden) { $("manualIn").value = interval; $("manualIn").focus(); } };
+$("manualIn").onchange = () => { const v = Math.round(+$("manualIn").value); if (v > 0) setIvl(v); $("manualIn").value = interval; };
 $("keep").onchange = () => { save(); syncWake(); };
 $("quote").onclick = newQuote;
 $("upd").onclick = () => {
@@ -371,6 +408,19 @@ function showTab(day) {
   $("view-timer").hidden = day; $("view-day").hidden = !day;
   store.set("tab", day);
 }
+const BRANDS = ["Marlboro", "Parliament", "Winston", "Camel", "LD", "Kent", "Bond Street", "Rothmans", "Philip Morris", "Chesterfield", "Sobranie", "Не курю сигареты"];
+let brand = store.get("brand", "");
+function renderBrand() {
+  $("brandName").textContent = brand || "Выбрать";
+  $("blist").innerHTML = BRANDS.map(b => '<button type="button" aria-pressed="' + (b === brand) + '">' + b + "</button>").join("");
+}
+function setBrand(b) { brand = b.trim(); store.set("brand", brand); renderBrand(); $("brandDlg").close(); }
+$("brandBtn").onclick = () => { $("bcustom").value = BRANDS.includes(brand) ? "" : brand; $("brandDlg").showModal(); };
+$("blist").onclick = e => { if (e.target.tagName === "BUTTON") setBrand(e.target.textContent); };
+$("bform").onsubmit = e => { e.preventDefault(); if ($("bcustom").value.trim()) setBrand($("bcustom").value); };
+$("bclose").onclick = () => $("brandDlg").close();
+renderBrand();
+
 $("tab-timer").onclick = () => showTab(false);
 $("tab-day").onclick = () => showTab(true);
 showTab(store.get("tab", false));
