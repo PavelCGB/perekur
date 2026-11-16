@@ -8,19 +8,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioAttributes;
-import android.net.Uri;
+import android.media.RingtoneManager;
 
 public class AlarmReceiver extends BroadcastReceiver {
-    static final String CH = "perekur_ready_soft";
+    static final String CH = "perekur_ready";
 
     @Override
     public void onReceive(Context c, Intent i) {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         NotificationChannel ch = new NotificationChannel(CH, "Можно курить", NotificationManager.IMPORTANCE_HIGH);
-        ch.setSound(Uri.parse("android.resource://" + c.getPackageName() + "/" + R.raw.soft_chime),
-                new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+        ch.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
+                new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build());
         ch.enableVibration(true);
-        ch.setVibrationPattern(new long[]{0, 250, 150, 250});
+        ch.setVibrationPattern(new long[]{0, 500, 200, 500, 200, 900});
         nm.createNotificationChannel(ch);
 
         Live.hide(c); // отсчёт закончен — убираем живое уведомление
@@ -29,7 +29,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 .setSmallIcon(R.drawable.ic_stat)
                 .setContentTitle("Молодец, ты продержался!")
                 .setContentText("Можешь выйти перекурить.")
-                .setCategory(Notification.CATEGORY_REMINDER)
+                .setCategory(Notification.CATEGORY_ALARM)
                 .setContentIntent(open)
                 .setAutoCancel(true)
                 .build());
