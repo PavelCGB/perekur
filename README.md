@@ -11,8 +11,11 @@
 ## Сборка
 
 ```
-cd android
-gradlew assembleDebug
+.\release.ps1 "Что нового"
 ```
 
 Нужны JDK 17+ и Android SDK. Интерфейс лежит в `perekur.html`. Перед сборкой его копия кладётся в `android/app/src/main/assets/index.html`.
+
+## Подпись (важно)
+
+APK подписывается ключом `%USERPROFILE%\.perekur\perekur.jks` (пароли — в `keystore.properties` рядом). Ключ лежит вне репозитория и обязателен для выпуска: обновление с другим ключом телефон не установит (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). Потеряешь ключ — обновления перестанут вставать поверх установленной версии, придётся один раз переустанавливать приложение. Сделай копию папки `.perekur`.

@@ -2,6 +2,12 @@ plugins {
     id "com.android.application"
 }
 
+// Ключ подписи лежит вне репозитория: %USERPROFILE%\.perekur\perekur.jks + keystore.properties.
+// Без него assembleRelease упадёт — это специально, чтобы не выпустить обновление с другим ключом.
+def keyProps = new Properties()
+def keyPropsFile = new File(System.getProperty("user.home"), ".perekur/keystore.properties")
+if (keyPropsFile.exists()) keyPropsFile.withInputStream { keyProps.load(it) }
+
 android {
     namespace "app.perekur"
     compileSdkVersion "android-37.0"  // нужен для шаблона MetricStyle (Android 17)
@@ -10,9 +16,27 @@ android {
         applicationId "app.perekur"
         minSdk 26
         targetSdk 36
-        versionCode 5
-        versionName "1.4"
+        versionCode 6
+        versionName "1.5"
     }
+
+    signingConfigs {
+        release {
+            if (keyPropsFile.exists()) {
+                storeFile new File(keyProps.getProperty("storeFile"))
+                storePassword keyProps.getProperty("storePassword")
+                keyAlias keyProps.getProperty("keyAlias")
+                keyPassword keyProps.getProperty("keyPassword")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
