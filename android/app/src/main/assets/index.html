@@ -65,13 +65,13 @@ h1 span { color: var(--ember); }
 .quote { margin: 0; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); font-size: .98rem; line-height: 1.45; text-align: center; cursor: pointer; text-wrap: balance; }
 .quote small { display: block; margin-top: 6px; color: var(--ember2); font-size: .78rem; font-weight: 700; }
 
-.label { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
+.label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 10px; font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
 .label output { font-family: var(--display); font-size: .9rem; letter-spacing: 0; text-transform: none; color: var(--fg); font-weight: 600; }
 .chips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .chips button, .step button { border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 700 .95rem var(--body); cursor: pointer; padding: 13px 0; }
 .chips button[aria-pressed="true"] { background: linear-gradient(135deg, var(--ember), var(--ember2)); color: #1a0d05; border-color: transparent; }
 .step { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-.locked .chips, .locked .step { opacity: .4; pointer-events: none; }
+.locked .chips, .locked .step, .locked .panel .field { opacity: .4; pointer-events: none; }
 
 .opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: .9rem; }
 .switch { position: relative; width: 48px; height: 28px; flex: none; }
@@ -108,6 +108,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
 .money span { font-size: .75rem; color: var(--muted); }
 .note { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.5; }
 .note b { color: var(--fg); }
+.dl { display: block; text-align: center; padding: 13px; border-radius: 14px; text-decoration: none; font: 800 .95rem var(--display);
+  background: linear-gradient(135deg, var(--ember), var(--ember2)); color: #1a0d05; }
+#newsBody { white-space: pre-line; }
 @media (prefers-reduced-motion: reduce) { .smoke { display: none; } .alarm .dial { animation: none; } .prog { transition: none; } }
 </style>
 
@@ -126,6 +129,12 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
     <button role="tab" id="tab-timer" aria-selected="true">Таймер</button>
     <button role="tab" id="tab-day" aria-selected="false">Мой режим</button>
   </nav>
+
+  <section class="panel" id="news" hidden>
+    <div class="label">Что нового в <output id="newsVer"></output></div>
+    <p class="note" id="newsBody"></p>
+    <a class="dl" id="newsDl" href="https://github.com/PavelCGB/perekur/releases/latest" target="_blank" rel="noopener" hidden>Скачать обновление</a>
+  </section>
 
   <section class="view" id="view-timer">
     <div class="dial">
@@ -161,6 +170,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
         <button id="minus">− 15 мин</button>
         <button id="plus">+ 15 мин</button>
       </div>
+      <label class="field"><span>Своё время, мин (15–600)</span><input type="number" id="custom" min="15" max="600" step="1" inputmode="numeric" placeholder="например 47"></label>
       <p class="lockmsg">Пока идёт таймер, перерыв не меняется.</p>
       <label class="opt" for="keep">Не гасить экран, пока ждёшь
         <span class="switch"><input type="checkbox" id="keep"><span></span></span>
@@ -279,6 +289,7 @@ function render() {
   app.classList.remove("idle", "waiting", "ready"); app.classList.add(state);
   app.classList.toggle("locked", state === "waiting");
   $("ivl").textContent = hm(interval);
+  if (document.activeElement !== $("custom")) $("custom").value = interval;
   document.querySelectorAll("#chips button").forEach(b => b.setAttribute("aria-pressed", +b.dataset.m === interval));
   $("prog").style.strokeDashoffset = state === "ready" ? 0 : C * (left / total);
   $("go").disabled = state === "waiting";       // не даём перезапустить идущий таймер
@@ -353,15 +364,32 @@ $("reset").onclick = () => {
 };
 $("minus").onclick = () => setIvl(interval - 15);
 $("plus").onclick = () => setIvl(interval + 15);
+$("custom").oninput = () => { const v = Math.round(+$("custom").value || 0); if (v) setIvl(v); };
 $("chips").onclick = e => { if (e.target.dataset.m) setIvl(+e.target.dataset.m); };
 $("keep").onchange = () => { save(); syncWake(); };
 $("quote").onclick = newQuote;
 $("upd").onclick = () => {
   const b = $("upd"); if (b.classList.contains("spin")) return;
   b.classList.add("spin"); setTimeout(() => b.classList.remove("spin"), 1500);
-  if (window.Android) window.Android.checkUpdate();
-  else { const p = $("pill"), t = p.textContent; p.textContent = "Только в приложении"; setTimeout(() => p.textContent = t, 2000); }
+  checkUpdate();
 };
+// в браузере обновление проверяем через GitHub API и показываем, что изменилось
+async function checkUpdate() {
+  if (window.Android) { window.Android.checkUpdate(); return; }
+  const p = $("pill"), back = p.textContent;
+  const wait = () => setTimeout(() => p.textContent = back, 4000);
+  try {
+    const r = await fetch("https://api.github.com/repos/PavelCGB/perekur/releases/latest");
+    if (!r.ok) throw r.status;
+    const d = await r.json();
+    const apk = (d.assets || []).find(a => /\.apk$/i.test(a.name));
+    $("newsVer").textContent = d.tag_name || "";
+    $("newsBody").textContent = (d.body || "").trim() || "Изменения не описаны.";
+    if (apk) $("newsDl").href = apk.browser_download_url;
+    $("newsDl").hidden = false; $("news").hidden = false;
+    p.textContent = "Последняя " + (d.tag_name || ""); wait();
+  } catch { p.textContent = "Не удалось проверить"; wait(); }
+}
 for (const id of ["wake", "sleep", "before", "price"]) $(id).oninput = renderDay;
 document.addEventListener("pointerdown", e => { if (beeper && !e.target.closest("#go")) stopAlarm(); });
 document.addEventListener("visibilitychange", () => { render(); syncWake(); });
