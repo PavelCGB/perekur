@@ -1,2 +1,6 @@
 *.apk
 .claude/
+debug.log
+dsh-plugins/
+PROMPT.md
+.shot*

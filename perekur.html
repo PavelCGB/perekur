@@ -8,6 +8,8 @@
   --fg: #f5ede4; --muted: #9b8f84; --ember: #ff6b2c; --ember2: #ffb347; --ready: #7cf0a8;
   --display: "Unbounded", "Arial Black", system-ui, sans-serif;
   --body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ease: cubic-bezier(.22,1,.36,1);
+  --spring: cubic-bezier(.34,1.4,.64,1);
   color-scheme: dark;
 }
 html, body { height: 100%; }
@@ -22,6 +24,8 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 1rem; letter-spac
 h1 span { color: var(--ember); }
 .brand { display: flex; align-items: center; gap: 10px; }
 .upd { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ember); display: grid; place-items: center; cursor: pointer; padding: 0; }
+button { transition: transform .16s var(--ease), background-color .22s var(--ease), border-color .22s var(--ease), color .22s var(--ease), box-shadow .3s var(--ease); -webkit-tap-highlight-color: transparent; }
+button:active { transform: scale(.96); }
 .upd svg { width: 18px; height: 18px; }
 .upd.spin svg { animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -30,23 +34,23 @@ h1 span { color: var(--ember); }
 .panel .label { margin-bottom: 0; }
 .lockmsg { display: none; margin: 0; color: var(--ember2); font-size: .85rem; }
 .locked .lockmsg { display: block; }
-.pill { font-size: .78rem; font-weight: 700; padding: 6px 12px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); }
+.pill { font-size: .78rem; font-weight: 700; padding: 6px 12px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); transition: color .3s var(--ease), border-color .3s var(--ease), background-color .3s var(--ease); }
 .ready .pill { color: var(--ready); border-color: color-mix(in srgb, var(--ready) 40%, transparent); }
 .waiting .pill { color: var(--ember2); }
 
 .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
-.tabs button { border: 0; border-radius: 12px; padding: 11px 0; background: none; color: var(--muted); font: 700 .9rem var(--body); cursor: pointer; }
+.tabs button { border: 0; border-radius: 12px; padding: 11px 0; background: none; color: var(--muted); font: 700 .9rem var(--body); cursor: pointer; transition: background-color .28s var(--ease), color .22s var(--ease); }
 .tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg); }
 
 /* ring */
 .dial { position: relative; width: min(78vw, 320px); aspect-ratio: 1; max-width: 100%; margin: 4px auto 0; }
 .dial svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
 .track { fill: none; stroke: var(--line); stroke-width: 10; }
-.prog { fill: none; stroke: url(#g); stroke-width: 10; stroke-linecap: round; filter: drop-shadow(0 0 8px var(--ember)); transition: stroke-dashoffset .4s linear; }
+.prog { fill: none; stroke: url(#g); stroke-width: 10; stroke-linecap: round; filter: drop-shadow(0 0 8px var(--ember)); transition: stroke-dashoffset .5s linear; }
 .ready .prog { stroke: var(--ready); filter: drop-shadow(0 0 10px var(--ready)); }
 .center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 8px; }
 .cap { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
-.time { font-family: var(--display); font-weight: 600; font-size: clamp(2.6rem, 13vw, 3.4rem); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.time { font-family: var(--display); font-weight: 600; font-size: clamp(2.6rem, 13vw, 3.4rem); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.02em; transition: color .35s var(--ease); }
 .at { color: var(--muted); font-size: .95rem; font-variant-numeric: tabular-nums; }
 .at b { color: var(--fg); }
 .ready .time { color: var(--ready); font-size: clamp(1.6rem, 8vw, 2.1rem); text-shadow: 0 0 24px color-mix(in srgb, var(--ready) 50%, transparent); }
@@ -60,7 +64,8 @@ h1 span { color: var(--ember); }
 @keyframes rise { 0% { opacity: 0; transform: translate(0,0) scale(.6); } 30% { opacity: .35; } 100% { opacity: 0; transform: translate(10px,-60px) scale(2.2); } }
 .idle .smoke, .ready .smoke { display: none; }
 
-.quote { margin: 0; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); font-size: .98rem; line-height: 1.45; text-align: center; cursor: pointer; text-wrap: balance; }
+.quote { margin: 0; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); font-size: .98rem; line-height: 1.45; text-align: center; cursor: pointer; text-wrap: balance; transition: border-color .25s var(--ease), background-color .25s var(--ease); }
+.quote:active { transform: scale(.99); }
 .quote small { display: block; margin-top: 6px; color: var(--ember2); font-size: .78rem; font-weight: 700; }
 
 .label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 10px; font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
@@ -74,8 +79,8 @@ h1 span { color: var(--ember); }
 .opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: .9rem; }
 .switch { position: relative; width: 48px; height: 28px; flex: none; }
 .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
-.switch span { position: absolute; inset: 0; border-radius: 99px; background: var(--line); transition: background .2s; pointer-events: none; }
-.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--fg); transition: transform .2s; }
+.switch span { position: absolute; inset: 0; border-radius: 99px; background: var(--line); transition: background-color .25s var(--ease); pointer-events: none; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--fg); transition: transform .32s var(--spring); }
 .switch input:checked + span { background: var(--ember); }
 .switch input:checked + span::after { transform: translateX(20px); }
 .switch input:focus-visible + span { outline: 3px solid var(--ember2); outline-offset: 2px; }
@@ -97,7 +102,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .field { display: grid; gap: 6px; min-width: 0; }
 .field span { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; }
-.field input { width: 100%; box-sizing: border-box; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 12px; font: 700 1.05rem var(--body); font-variant-numeric: tabular-nums; }
+.field input { width: 100%; box-sizing: border-box; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 12px; font: 700 1.05rem var(--body); font-variant-numeric: tabular-nums; transition: border-color .25s var(--ease), background-color .25s var(--ease); }
+.field input:focus { border-color: color-mix(in srgb, var(--ember) 60%, transparent); background: rgba(255,255,255,.07); outline: none; }
+.field input:focus-visible { outline: 3px solid var(--ember2); outline-offset: 2px; }
 .sched { display: flex; flex-wrap: wrap; gap: 6px; }
 .sched span { padding: 6px 10px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); font-size: .85rem; font-variant-numeric: tabular-nums; }
 .money { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -109,7 +116,32 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ember2); ou
 .dl { display: block; text-align: center; padding: 13px; border-radius: 14px; text-decoration: none; font: 800 .95rem var(--display);
   background: linear-gradient(135deg, var(--ember), var(--ember2)); color: #1a0d05; }
 #newsBody { white-space: pre-line; }
-@media (prefers-reduced-motion: reduce) { .smoke { display: none; } .alarm .dial { animation: none; } .prog { transition: none; } }
+
+/* ---------- движение ---------- */
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop { 50% { transform: scale(1.06); } }
+@keyframes breathe { 50% { filter: drop-shadow(0 0 16px var(--ember)); } }
+
+.view > * { animation: rise .55s var(--ease) both; }
+.view > *:nth-child(2) { animation-delay: .04s; }
+.view > *:nth-child(3) { animation-delay: .08s; }
+.view > *:nth-child(4) { animation-delay: .12s; }
+.view > *:nth-child(5) { animation-delay: .16s; }
+.view > *:nth-child(6) { animation-delay: .2s; }
+.view > *:nth-child(7) { animation-delay: .24s; }
+.view > *:nth-child(8) { animation-delay: .28s; }
+#news:not([hidden]) { animation: fade .4s var(--ease) both; }
+.quote.swap { animation: fade .35s var(--ease); }
+.pulse { animation: pop .4s var(--ease); }
+.waiting .prog { animation: breathe 3.4s ease-in-out infinite; }
+.big .num, .money b, .pill { will-change: transform; }
+
+@media (prefers-reduced-motion: reduce) {
+  .smoke { display: none; } .alarm .dial { animation: none; } .prog { transition: none; }
+  .view > *, #news:not([hidden]), .quote.swap, .pulse, .waiting .prog { animation: none !important; }
+  button:active, .quote:active { transform: none; }
+}
 </style>
 
 <main class="app idle" id="app">
@@ -250,6 +282,9 @@ function fmt(ms) {
   return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(ss).padStart(2, "0");
 }
 const plural = (n, a, b, c) => { const m = n % 100, d = n % 10; return m > 10 && m < 20 ? c : d === 1 ? a : d > 1 && d < 5 ? b : c; };
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function pulse(el) { if (reduceMotion) return; el.classList.remove("pulse"); void el.offsetWidth; el.classList.add("pulse"); }
+function setText(id, v) { const el = $(id); if (el.textContent !== v) { el.textContent = v; pulse(el); } }
 
 /* ---------- day plan ---------- */
 const toMin = v => { const [h, m] = (v || "0:0").split(":").map(Number); return h * 60 + m; };
@@ -266,13 +301,13 @@ console.assert(dayPlan("23:00", "07:00", 60).count === 9, "через полно
 function renderDay() {
   const p = dayPlan($("wake").value, $("sleep").value, interval);
   const before = Math.max(0, +$("before").value || 0), price = Math.max(0, +$("price").value || 0);
-  $("perDay").textContent = p.count;
+  setText("perDay", String(p.count));
   $("perDayText").textContent = plural(p.count, "сигарета", "сигареты", "сигарет") + " в день при перерыве " + hm(interval);
   $("awake").textContent = "не спишь " + hm(p.awake);
   $("sched").innerHTML = p.times.map(t => "<span>" + t + "</span>").join("");
   const less = before - p.count, perDay = Math.max(0, less) * price / PACK;
   $("minus-cigs").textContent = less > 0 ? "−" + less + " шт/день" : "";
-  $("mDay").textContent = rub(perDay); $("mMonth").textContent = rub(perDay * 30); $("mYear").textContent = rub(perDay * 365);
+  setText("mDay", rub(perDay)); setText("mMonth", rub(perDay * 30)); setText("mYear", rub(perDay * 365));
   $("note").innerHTML = less > 0
     ? "Это <b>" + Math.round(less * 365 / PACK) + " " + plural(Math.round(less * 365 / PACK), "пачка", "пачки", "пачек") + "</b> в год, которые ты не купишь. Увеличь перерыв ещё на 15 минут — сэкономишь больше."
     : "С таким перерывом ты куришь не меньше, чем раньше. Увеличь перерыв выше, чтобы появилась экономия.";
@@ -297,23 +332,24 @@ function render() {
     $("cap").textContent = "Ты дождался";
     $("time").textContent = "Можно курить";
     $("at").innerHTML = "с <b>" + clock(startAt + total) + "</b>";
-    $("pill").textContent = "Пора";
+    setText("pill", "Пора");
     $("go").textContent = "Покурил — засечь снова";
     if (!alarmed) alarm();
   } else {
     $("cap").textContent = "Следующий через";
     $("time").textContent = fmt(left);
     $("at").innerHTML = state === "waiting" ? "можно в <b>" + clock(startAt + total) + "</b>" : "нажми, когда покурил";
-    $("pill").textContent = state === "waiting" ? "Ждём" : "Не запущен";
+    setText("pill", state === "waiting" ? "Ждём" : "Не запущен");
     $("go").textContent = state === "waiting" ? "Таймер уже идёт" : "Покурил — засечь";
   }
   document.title = state === "waiting" ? fmt(left) + " · Перекур" : state === "ready" ? "Можно курить" : "Таймер перекура";
 }
 function newQuote() {
-  const s = lastState;
-  $("quote").innerHTML = s === "ready" ? pick(QUOTES_READY) + "<small>Перерыв выдержан</small>"
+  const s = lastState, q = $("quote");
+  q.innerHTML = s === "ready" ? pick(QUOTES_READY) + "<small>Перерыв выдержан</small>"
     : s === "waiting" ? pick(QUOTES_WAIT) + "<small>Нажми, если тянет — будет другая подсказка</small>"
     : "Покурил? Жми кнопку внизу, и я скажу, когда можно снова.";
+  if (!reduceMotion) { q.classList.remove("swap"); void q.offsetWidth; q.classList.add("swap"); }
 }
 
 function setIvl(m) { if ($("app").classList.contains("waiting")) return; interval = Math.min(600, Math.max(15, m)); save(); render(); renderDay(); }
@@ -396,6 +432,7 @@ function showTab(day) {
   $("tab-timer").setAttribute("aria-selected", !day); $("tab-day").setAttribute("aria-selected", day);
   $("view-timer").hidden = day; $("view-day").hidden = !day;
   store.set("tab", day);
+  if (!reduceMotion) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 $("tab-timer").onclick = () => showTab(false);
 $("tab-day").onclick = () => showTab(true);
